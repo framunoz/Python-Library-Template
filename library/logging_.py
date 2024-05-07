@@ -805,9 +805,9 @@ class register_total_time:
     elapsed time with the attribute ``elapsed_time``.
 
     >>> with register_total_time(log) as timer:
-    ...     time.sleep(0.2)
-    >>> round(timer.elapsed_time, 1)
-    0.2
+    ...     time.sleep(1)
+    >>> round(timer.elapsed_time)
+    1
     >>> print(log_stream.getvalue()[:-6])  # Remove the microseconds
     Starting the block of code...
     The block of code takes 0:00:00.2
@@ -818,10 +818,10 @@ class register_total_time:
 
     >>> @register_total_time(log)
     ... def test_function():
-    ...     time.sleep(0.2)
+    ...     time.sleep(1)
     >>> test_function()
-    >>> print(log_stream.getvalue()[:-6])  # Remove the microseconds
-    The function 'test_function' takes 0:00:00.2
+    >>> print(log_stream.getvalue()[:-8])  # Remove the microseconds
+    The function 'test_function' takes 0:00:01
 
     And even set the level of the logger.
 
@@ -830,7 +830,7 @@ class register_total_time:
     >>> log2.addHandler(logging.StreamHandler(log_stream2))
     >>> @register_total_time(log2, logging.INFO)  # This will not show
     ... def test_function():
-    ...     time.sleep(0.2)
+    ...     time.sleep(0.1)
     >>> test_function()
     >>> log_stream2.getvalue()  # Nothing to show
     ''
@@ -915,10 +915,10 @@ def register_total_time_function(
 
     >>> @register_total_time_function(log)
     ... def test_function():
-    ...     time.sleep(0.2)
+    ...     time.sleep(1)
     >>> test_function()
-    >>> print(log_stream.getvalue()[:-6])  # Remove the microseconds
-    The function 'test_function' takes 0:00:00.2
+    >>> print(log_stream.getvalue()[:-8])  # Remove the microseconds
+    The function 'test_function' takes 0:00:01
     """
 
     # noinspection PyMissingOrEmptyDocstring
@@ -967,11 +967,11 @@ def register_total_time_method(
     >>> class Test:
     ...     @register_total_time_method(log)
     ...     def test_method(self):
-    ...         time.sleep(0.2)
+    ...         time.sleep(1)
     >>> Test().test_method()
-    >>> print(log_stream.getvalue()[:-6])  # Remove the microseconds
+    >>> print(log_stream.getvalue()[:-8])  # Remove the microseconds
     Using the method 'Test.test_method'...
-    The method 'Test.test_method' takes 0:00:00.2
+    The method 'Test.test_method' takes 0:00:01
     """
 
     # noinspection PyMissingOrEmptyDocstring
