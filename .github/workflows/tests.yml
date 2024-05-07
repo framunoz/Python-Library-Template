@@ -46,7 +46,6 @@ jobs:
         thresholdNew: 0.9
         token: ${{ secrets.GITHUB_TOKEN }}
 
-    # This does not works :(
     - name: Pytest coverage comment
       if: ${{ matrix.python-version == '3.12' && github.ref == 'refs/heads/main'}}
       id: coverageComment
