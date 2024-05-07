@@ -23,6 +23,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+        fetch-depth: 0
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v3
       with:
@@ -34,14 +37,38 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Run tests
       run: |
-        python -m pytest --durations=20  -v --doctest-modules --color=yes --cov=./ --cov-report=xml
+        python -m pytest --durations=20  -v --doctest-modules --color=yes --cov=./ --cov-report=xml:reports/coverage/coverage.xml
     - name: Upload coverage
       uses: orgoro/coverage@v3.1
       with:
-        coverageFile: coverage.xml
+        coverageFile: reports/coverage/coverage.xml
         thresholdAll: 0.8
         thresholdNew: 0.9
         token: ${{ secrets.GITHUB_TOKEN }}
+
+    # This does not works :(
+    - name: Pytest coverage comment
+      if: ${{ matrix.python-version == '3.12' && github.ref == 'refs/heads/main'}}
+      id: coverageComment
+      uses: MishaKav/pytest-coverage-comment@main
+      with:
+        pytest-xml-coverage-path: ./reports/coverage/coverage.xml
+        hide-comment: true
+#        hide-badge: true
+#        hide-report: true
+
+    - name: Update Readme with Coverage Html
+      if: ${{ github.ref == 'refs/heads/main' }}
+      run: |
+        sed -i '/<!-- Pytest Coverage Comment:Begin -->/,/<!-- Pytest Coverage Comment:End -->/c\<!-- Pytest Coverage Comment:Begin -->\n\${{ steps.coverageComment.outputs.coverageHtml }}\n<!-- Pytest Coverage Comment:End -->' ./README.md
+
+    - name: Commit & Push changes to Readme
+      if: ${{ github.ref == 'refs/heads/main' }}
+      uses: actions-js/push@master
+      with:
+        message: Update coverage on Readme
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        
 
   macos:
 
