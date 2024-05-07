@@ -808,9 +808,9 @@ class register_total_time:
     ...     time.sleep(1)
     >>> round(timer.elapsed_time)
     1
-    >>> print(log_stream.getvalue()[:-6])  # Remove the microseconds
+    >>> print(log_stream.getvalue()[:-8])  # Remove the microseconds
     Starting the block of code...
-    The block of code takes 0:00:00.2
+    The block of code takes 0:00:01
     >>> _ = log_stream.seek(0)      # Clean the stream
     >>> _ = log_stream.truncate(0)  # Clean the stream
 
