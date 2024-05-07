@@ -607,8 +607,9 @@ class LoggerConfiguration(metaclass=_SingletonMeta):
         We can also use the function ``raise_warning`` that is an alias
         of the method.
 
-        >>> raise_warning("This is a warning.", log, UserWarning)
-        >>> print(log_stream.getvalue()[:-1])
+        >>> with warnings.catch_warnings(record=True) as w:
+        ...     raise_warning("This is a warning.", log, UserWarning)
+        >>> print(w[0].message.args[0])
         This is a warning.
 
         """
@@ -804,25 +805,23 @@ class register_total_time:
     elapsed time with the attribute ``elapsed_time``.
 
     >>> with register_total_time(log) as timer:
-    ...     time.sleep(1)
-    >>> round(timer.elapsed_time)
-    1
-    >>> print(log_stream.getvalue()[:-8])  # Remove the microseconds
+    ...     time.sleep(0.2)
+    >>> round(timer.elapsed_time, 1)
+    0.2
+    >>> print(log_stream.getvalue()[:-6])  # Remove the microseconds
     Starting the block of code...
-    The block of code takes 0:00:01
-    >>> log_stream.seek(0)      # Clean the stream
-    0
-    >>> log_stream.truncate(0)  # Clean the stream
-    0
+    The block of code takes 0:00:00.2
+    >>> _ = log_stream.seek(0)      # Clean the stream
+    >>> _ = log_stream.truncate(0)  # Clean the stream
 
     We can use the class as a decorator for a function.
 
     >>> @register_total_time(log)
     ... def test_function():
-    ...     time.sleep(1)
+    ...     time.sleep(0.2)
     >>> test_function()
-    >>> print(log_stream.getvalue()[:-8])  # Remove the microseconds
-    The function 'test_function' takes 0:00:01
+    >>> print(log_stream.getvalue()[:-6])  # Remove the microseconds
+    The function 'test_function' takes 0:00:00.2
 
     And even set the level of the logger.
 
@@ -831,7 +830,7 @@ class register_total_time:
     >>> log2.addHandler(logging.StreamHandler(log_stream2))
     >>> @register_total_time(log2, logging.INFO)  # This will not show
     ... def test_function():
-    ...     time.sleep(1)
+    ...     time.sleep(0.2)
     >>> test_function()
     >>> log_stream2.getvalue()  # Nothing to show
     ''
@@ -916,10 +915,10 @@ def register_total_time_function(
 
     >>> @register_total_time_function(log)
     ... def test_function():
-    ...     time.sleep(1)
+    ...     time.sleep(0.2)
     >>> test_function()
-    >>> print(log_stream.getvalue()[:-8])  # Remove the microseconds
-    The function 'test_function' takes 0:00:01
+    >>> print(log_stream.getvalue()[:-6])  # Remove the microseconds
+    The function 'test_function' takes 0:00:00.2
     """
 
     # noinspection PyMissingOrEmptyDocstring
@@ -968,11 +967,11 @@ def register_total_time_method(
     >>> class Test:
     ...     @register_total_time_method(log)
     ...     def test_method(self):
-    ...         time.sleep(1)
+    ...         time.sleep(0.2)
     >>> Test().test_method()
-    >>> print(log_stream.getvalue()[:-8])  # Remove the microseconds
+    >>> print(log_stream.getvalue()[:-6])  # Remove the microseconds
     Using the method 'Test.test_method'...
-    The method 'Test.test_method' takes 0:00:01
+    The method 'Test.test_method' takes 0:00:00.2
     """
 
     # noinspection PyMissingOrEmptyDocstring
@@ -1058,5 +1057,4 @@ def register_init_method(logger: logging.Logger, level: int = logging.DEBUG):
 
 if __name__ == '__main__':
     import doctest
-
     doctest.testmod()
