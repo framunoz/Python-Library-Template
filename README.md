@@ -1,3 +1,6 @@
+<!-- Pytest Coverage Comment:Begin -->
+<!-- Pytest Coverage Comment:End -->
+
 # Python-Library-Template
 
 This is a template for a Python library. It includes a README.md file, 
