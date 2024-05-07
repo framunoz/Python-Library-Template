@@ -37,6 +37,6 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
     - name: Run tests
       run: |
-        python -m pytest --duration=20 -v --doctest-modules --color=yes --cov=./ --cov-report=xml
+        python -m pytest --durations=20  -v --doctest-modules --color=yes --cov=./ --cov-report=xml
     - name: Upload coverage reports to Codecov with GitHub Action
       uses: codecov/codecov-action@v3
