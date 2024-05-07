@@ -48,7 +48,7 @@ class _SingletonMeta(type):
     https://refactoring.guru/design-patterns/singleton/python/example#example-1
     """
 
-    _instances = {}
+    _instances = dict()
     _lock: threading.Lock = threading.Lock()
 
     def __call__(cls, *args, **kwargs):
@@ -63,10 +63,10 @@ class LoggerConfiguration(metaclass=_SingletonMeta):
     """A singleton that manages the configuration of the loggers in the
     library.
 
-    :cvar LEVEL: The general level of the loggers in the library.
+    :cvar level: The general level of the loggers in the library.
         Default is ``WARNING``.
-    :cvar FORMATTER: The generic formatter of the loggers.
-    :cvar HANDLERS: The list of handlers handled by the library.
+    :cvar formatter: The generic formatter of the loggers.
+    :cvar handlers: The list of handlers handled by the library.
         Default is ``[STREAM_HANDLER]``.
     :cvar loggers: The loggers instance of the package.
 
@@ -91,9 +91,9 @@ class LoggerConfiguration(metaclass=_SingletonMeta):
     >>> logger.debug("This is a debug message.")  # This will not show
     """
 
-    LEVEL: int = WARNING
-    FORMATTER: logging.Formatter = GENERIC_FORMATTER
-    HANDLERS: list[logging.Handler] = [STREAM_HANDLER]
+    level: int = WARNING
+    formatter: logging.Formatter = GENERIC_FORMATTER
+    handlers: list[logging.Handler] = [STREAM_HANDLER]
     loggers: dict[str, logging.Logger] = dict()
 
     def reset(self) -> t.Self:
@@ -106,17 +106,17 @@ class LoggerConfiguration(metaclass=_SingletonMeta):
         We set the level of the loggers to DEBUG.
 
         >>> log_conf = LoggerConfiguration().set_level(logging.DEBUG)
-        >>> log_conf.LEVEL == logging.DEBUG
+        >>> log_conf.level == logging.DEBUG
         True
 
         And reset the logger configuration.
 
         >>> _ = log_conf.reset()
-        >>> log_conf.LEVEL == logging.WARNING
+        >>> log_conf.level == logging.WARNING
         True
         """
-        self.LEVEL = WARNING
-        self.HANDLERS = [STREAM_HANDLER]
+        self.level = WARNING
+        self.handlers = [STREAM_HANDLER]
         self.loggers = dict()
         return self
 
@@ -148,7 +148,7 @@ class LoggerConfiguration(metaclass=_SingletonMeta):
         >>> _ = log_conf.remove_all_handlers(log_ex).attach_handlers(log_ex)
         >>> len(log_ex.handlers)  # Now, there are the default handlers
         1
-        >>> log_ex.handlers[0] is log_conf.HANDLERS[0]
+        >>> log_ex.handlers[0] is log_conf.handlers[0]
         True
 
         We can attach more handlers to the logger.
@@ -162,7 +162,7 @@ class LoggerConfiguration(metaclass=_SingletonMeta):
         """
         # Set the default handlers
         if handlers is None:
-            handlers = self.HANDLERS
+            handlers = self.handlers
 
         for handler in handlers:
             if handler not in logger.handlers:
@@ -239,7 +239,7 @@ class LoggerConfiguration(metaclass=_SingletonMeta):
             logger = logging.getLogger(name)
         self.loggers[name] = logger
         self.attach_handlers(logger, handlers)
-        logger.setLevel(level or self.LEVEL)
+        logger.setLevel(level or self.level)
         return logger
 
     def set_level(self, level: int, name: str = None) -> t.Self:
@@ -263,7 +263,7 @@ class LoggerConfiguration(metaclass=_SingletonMeta):
 
         >>> import logging
         >>> log_conf = LoggerConfiguration().reset().set_level(logging.DEBUG)
-        >>> log_conf.LEVEL == logging.DEBUG
+        >>> log_conf.level == logging.DEBUG
         True
 
         If we have a logger that was created with the logger
@@ -292,7 +292,7 @@ class LoggerConfiguration(metaclass=_SingletonMeta):
         True
         >>> log2.level == logging.INFO
         True
-        >>> log_conf.LEVEL == logging.INFO
+        >>> log_conf.level == logging.INFO
         True
 
         If the name is not in the loggers, it raises a ValueError.
@@ -322,13 +322,13 @@ class LoggerConfiguration(metaclass=_SingletonMeta):
         # Otherwise, iterate over every logger
         for logger in self.loggers.values():
             logger.setLevel(level)
-        self.LEVEL = level
+        self.level = level
 
         return self
 
     def __repr__(self):
-        return (f"LoggerConfiguration(LEVEL={self.LEVEL}, "
-                f"HANDLERS={self.HANDLERS})")
+        return (f"LoggerConfiguration(LEVEL={self.level}, "
+                f"HANDLERS={self.handlers})")
 
     def remove_all_handlers(self, logger: logging.Logger = None) -> t.Self:
         """
@@ -386,7 +386,7 @@ class LoggerConfiguration(metaclass=_SingletonMeta):
                 for handler in logger.handlers:
                     logger.removeHandler(handler)
 
-        self.HANDLERS = []
+        self.handlers = []
 
         return self
 
@@ -448,7 +448,7 @@ class LoggerConfiguration(metaclass=_SingletonMeta):
             if handler not in logger.handlers:
                 logger.addHandler(handler)
 
-        self.HANDLERS.append(handler)
+        self.handlers.append(handler)
         return self
 
     def set_formatter(
@@ -489,25 +489,25 @@ class LoggerConfiguration(metaclass=_SingletonMeta):
         >>> other_handler.setFormatter(formatter)
         >>> log_conf.add_handler(other_handler)
         LoggerConfiguration(LEVEL=30, HANDLERS=[<StreamHandler <stderr> (NOTSET)>, <StreamHandler <stderr> (NOTSET)>])
-        >>> all(handler.formatter == formatter for handler in log_conf.HANDLERS)
+        >>> all(handler.formatter == formatter for handler in log_conf.handlers)
         False
         >>> log_conf.set_formatter(formatter=formatter)
         LoggerConfiguration(LEVEL=30, HANDLERS=[<StreamHandler <stderr> (NOTSET)>, <StreamHandler <stderr> (NOTSET)>])
-        >>> all(handler.formatter == formatter for handler in log_conf.HANDLERS)
+        >>> all(handler.formatter == formatter for handler in log_conf.handlers)
         True
         """
         # Set the default formatter
-        formatter_ = formatter or self.FORMATTER
+        formatter_ = formatter or self.formatter
 
         if handler is not None:
             handler.setFormatter(formatter_)
             return self
 
-        for handler in self.HANDLERS:
+        for handler in self.handlers:
             handler.setFormatter(formatter_)
 
         if formatter is not None:
-            self.FORMATTER = formatter
+            self.formatter = formatter
 
         return self
 
@@ -646,7 +646,7 @@ log_config = LoggerConfiguration()
 # noinspection PyMissingOrEmptyDocstring
 def get_logger(
     name: str,
-    level: int = log_config.LEVEL,
+    level: int = log_config.level,
     handlers: list[logging.Handler] = None
 ) -> logging.Logger:
     return log_config.get_logger(name, level, handlers)
