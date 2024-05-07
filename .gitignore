@@ -43,7 +43,7 @@ htmlcov/
 .coverage.*
 .cache
 nosetests.xml
-coverage.xml
+reports/coverage/coverage.xml
 *,cover
 .hypothesis/
 
