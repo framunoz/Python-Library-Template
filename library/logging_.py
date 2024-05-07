@@ -78,12 +78,12 @@ class LoggerConfiguration(metaclass=_SingletonMeta):
 
     >>> log_conf = LoggerConfiguration().reset()  # Reset is optional
     >>> log_conf
-    LoggerConfiguration(LEVEL=30, HANDLERS=[<StreamHandler <stderr> (NOTSET)>])
+    LoggerConfiguration(level=30, handlers=[StreamHandler])
 
     Set the level of the loggers.
 
     >>> log_conf.set_level(logging.INFO)
-    LoggerConfiguration(LEVEL=20, HANDLERS=[<StreamHandler <stderr> (NOTSET)>])
+    LoggerConfiguration(level=20, handlers=[StreamHandler])
 
     And get a logger with a specific name.
 
@@ -156,7 +156,7 @@ class LoggerConfiguration(metaclass=_SingletonMeta):
         >>> import logging
         >>> handler = logging.StreamHandler()
         >>> log_conf.attach_handlers(log_ex, [handler])
-        LoggerConfiguration(LEVEL=30, HANDLERS=[<StreamHandler <stderr> (NOTSET)>])
+        LoggerConfiguration(level=30, handlers=[StreamHandler])
         >>> len(log_ex.handlers)
         2
         """
@@ -287,7 +287,11 @@ class LoggerConfiguration(metaclass=_SingletonMeta):
         >>> log2.level == logging.INFO
         True
         >>> log_conf.set_level(logging.WARNING, "example")
-        LoggerConfiguration(LEVEL=20, HANDLERS=[<StreamHandler <stderr> (NOTSET)>])
+        LoggerConfiguration(
+          level=20,
+          handlers=[StreamHandler],
+          loggers=[example, example2]
+        )
         >>> log.level == logging.WARNING
         True
         >>> log2.level == logging.INFO
@@ -306,7 +310,11 @@ class LoggerConfiguration(metaclass=_SingletonMeta):
         of the method.
 
         >>> set_level(logging.CRITICAL)
-        LoggerConfiguration(LEVEL=50, HANDLERS=[<StreamHandler <stderr> (NOTSET)>])
+        LoggerConfiguration(
+          level=50,
+          handlers=[StreamHandler],
+          loggers=[example, example2]
+        )
         """
         if name in self.loggers:
             self.loggers[name].setLevel(level)
@@ -327,8 +335,33 @@ class LoggerConfiguration(metaclass=_SingletonMeta):
         return self
 
     def __repr__(self):
-        return (f"LoggerConfiguration(LEVEL={self.level}, "
-                f"HANDLERS={self.handlers})")
+        sep, new_line, tab = ", ", "", ""
+        if self.loggers:
+            new_line = "\n"
+            sep = f",{new_line}"
+            tab = " " * 2
+        to_return = self.__class__.__name__ + "(" + new_line
+
+        to_return += tab + f"level={self.level}" + sep
+
+        if self.handlers:
+            to_return += tab + f"handlers=["
+            for handler in self.handlers:
+                handler_name = handler.__class__.__name__
+                to_return += handler_name + ", "
+            to_return = to_return[:-2] + "]" + sep
+
+        if self.loggers:
+            to_return += tab + f"loggers=["
+            for logger in self.loggers.keys():
+                to_return += logger + ", "
+            to_return = to_return[:-2] + "]" + sep
+
+        if to_return.endswith(sep):
+            to_return = to_return[:-len(sep)]
+        to_return += new_line + ")"
+
+        return to_return
 
     def remove_all_handlers(self, logger: logging.Logger = None) -> t.Self:
         """
@@ -353,7 +386,11 @@ class LoggerConfiguration(metaclass=_SingletonMeta):
         And remove the handlers from the logger.
 
         >>> log_conf.remove_all_handlers(log)
-        LoggerConfiguration(LEVEL=30, HANDLERS=[<StreamHandler <stderr> (NOTSET)>])
+        LoggerConfiguration(
+          level=30,
+          handlers=[StreamHandler],
+          loggers=[remove_all_handlers_example]
+        )
         >>> len(log.handlers)
         0
 
@@ -366,7 +403,10 @@ class LoggerConfiguration(metaclass=_SingletonMeta):
         We can remove all the handlers from every logger in the package.
 
         >>> log_conf.remove_all_handlers()
-        LoggerConfiguration(LEVEL=30, HANDLERS=[])
+        LoggerConfiguration(
+          level=30,
+          loggers=[remove_all_handlers_example, remove_all_handlers_example2]
+        )
         >>> len(log.handlers)
         0
         >>> log3 = log_conf.get_logger("remove_all_handlers_example3")
@@ -413,7 +453,7 @@ class LoggerConfiguration(metaclass=_SingletonMeta):
         And add the handler to the logger configuration.
 
         >>> log_conf.add_handler(handler)
-        LoggerConfiguration(LEVEL=30, HANDLERS=[<StreamHandler <stderr> (NOTSET)>, <NullHandler (NOTSET)>])
+        LoggerConfiguration(level=30, handlers=[StreamHandler, NullHandler])
 
         If we create a logger, it should have the handler.
 
@@ -478,7 +518,7 @@ class LoggerConfiguration(metaclass=_SingletonMeta):
 
         >>> handler = logging.StreamHandler()
         >>> log_conf.set_formatter(handler)
-        LoggerConfiguration(LEVEL=30, HANDLERS=[<StreamHandler <stderr> (NOTSET)>])
+        LoggerConfiguration(level=30, handlers=[StreamHandler])
         >>> handler.formatter == GENERIC_FORMATTER
         True
 
@@ -488,11 +528,11 @@ class LoggerConfiguration(metaclass=_SingletonMeta):
         >>> other_handler = logging.StreamHandler()
         >>> other_handler.setFormatter(formatter)
         >>> log_conf.add_handler(other_handler)
-        LoggerConfiguration(LEVEL=30, HANDLERS=[<StreamHandler <stderr> (NOTSET)>, <StreamHandler <stderr> (NOTSET)>])
+        LoggerConfiguration(level=30, handlers=[StreamHandler, StreamHandler])
         >>> all(handler.formatter == formatter for handler in log_conf.handlers)
         False
         >>> log_conf.set_formatter(formatter=formatter)
-        LoggerConfiguration(LEVEL=30, HANDLERS=[<StreamHandler <stderr> (NOTSET)>, <StreamHandler <stderr> (NOTSET)>])
+        LoggerConfiguration(level=30, handlers=[StreamHandler, StreamHandler])
         >>> all(handler.formatter == formatter for handler in log_conf.handlers)
         True
         """
@@ -1014,3 +1054,9 @@ def register_init_method(logger: logging.Logger, level: int = logging.DEBUG):
         return wrapper
 
     return decorator
+
+
+if __name__ == '__main__':
+    import doctest
+
+    doctest.testmod()
