@@ -1,6 +1,8 @@
 <!-- Pytest Coverage Comment:Begin -->
 <!-- Pytest Coverage Comment:End -->
 
+[![cov](doc/img/coverage-badge.svg)](doc/img/coverage-badge.svg)
+
 # Python-Library-Template
 
 This is a template for a Python library. It includes a README.md file, 
@@ -79,3 +81,28 @@ poetry add <DEPENDENCY>
 ```
 
 Where `<DEPENDENCY>` is the name of the dependency you want to add.
+
+## Coverage badge
+
+You can add a coverage badge to your README.md file by adding the
+following lines to the file:
+
+```markdown
+[![cov](doc/img/coverage-badge.svg)](doc/img/coverage-badge.svg)
+```
+
+For this, you need to install the `pytest`, `pytest-cov` and `genbadge`
+packages. You can do this by running the following command:
+
+```bash
+poetry add --dev pytest pytest-cov genbadge
+```
+
+Then, you can run the following command to generate the coverage badge:
+
+```bash
+python -m pytest --durations=20 --doctest-modules -v --color=yes --cov=./ --cov-report=xml:reports/coverage/coverage.xml
+python -m genbadge coverage -o doc/img/coverage-badge.svg
+```
+The coverage badge will be saved and updated automatically in the
+`doc/img` directory.
