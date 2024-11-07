@@ -73,14 +73,8 @@ Poetry has created. The tree structure of the project should look like this:
 
 Where `<LIBRARY-NAME>` is the name of the library you chose.
 
-When you want to add a new dependency to the project, you can run the
-following command:
-
-```bash
-poetry add <DEPENDENCY>
-```
-
-Where `<DEPENDENCY>` is the name of the dependency you want to add.
+For further information on how to use Poetry, you can check this
+[tutorial](doc/basic_poetry_usage.md).
 
 ## Coverage badge
 
